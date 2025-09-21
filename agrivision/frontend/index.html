@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AGRIVISION</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <header>
+    <div class="header-links">
+      <a href="/index1.html" class="lalu">Image</a>
+      <a href="/index2.html">Beginner</a>
+      <a href="/index3.html">Management</a>
+      <a href="/index4.html">Login</a>
+    </div>
+    <h1>AGRIVISION</h1>
+    <p>From Soil to Harvest – Step by Step</p>
+  </header>
+
+  <section class="search-ai" id="searchSection">
+    <input type="text" id="aiSearch" placeholder="Ask anything about agriculture..." />
+    <button id="searchBtn">🔍</button>
+    <button id="voiceBtn" title="Speak your question">🎤</button>
+  </section>
+  <!-- Only one output box below search -->
+  <div id="response" class="search-result" ></div>
+
+  <footer>
+    <p>&copy; 2025 GreenFarm | All rights reserved.</p>
+  </footer>
+
+<script>
+  const WEBHOOK_URL = "https://viraj0707.app.n8n.cloud/webhook-test/04a061be-4c3d-4988-823b-84d9a4f25041";
+
+  function showMessage(message, type = "info") {
+    const responseBox = document.getElementById("response");
+    responseBox.innerHTML = `
+      <div class="message ${type}">
+        ${message}
+      </div>
+    `;
+  }
+
+  // Format object nicely (key: value)
+  function formatObject(obj) {
+    return `
+      <div class="result-card">
+        ${Object.entries(obj)
+          .map(
+            ([key, value]) =>
+              `<div class="result-line"><strong>${key}:</strong> ${value}</div>`
+          )
+          .join("")}
+      </div>
+    `;
+  }
+
+  // Format steps (array or multi-line text)
+  function formatSteps(data) {
+    let steps = [];
+
+    if (Array.isArray(data)) {
+      steps = data;
+    } else if (typeof data === "string") {
+      // Case 1: Split by "Step X:"
+      if (data.includes("Step")) {
+        steps = data
+          .split(/Step\s*\d+:/) // split at "Step <number>:"
+          .filter((s) => s.trim() !== "")
+          .map((s, i) => `Step ${i + 1}: ${s.trim().replace(/^,/, "")}`);
+      } else {
+        // Case 2: Split by newlines or commas
+        steps = data.split(/[\n,]+/).filter((line) => line.trim() !== "");
+      }
+    }
+
+    return `
+      <ol class="steps-list">
+        ${steps.map((step) => `<li>${step}</li>`).join("")}
+      </ol>
+    `;
+  }
+
+  async function handleResponse(res, label = "Result") {
+    let data;
+    try {
+      data = await res.json();
+
+      if (Array.isArray(data)) {
+        showMessage(`<h3>✅ ${label}:</h3>${formatSteps(data)}`, "success");
+      } else if (typeof data === "object" && data !== null) {
+        showMessage(`<h3>✅ ${label}:</h3>${formatObject(data)}`, "success");
+      } else {
+        showMessage(`<h3>✅ ${label}:</h3>${formatSteps(data.message || data)}`, "success");
+      }
+    } catch {
+      data = await res.text();
+      showMessage(`<h3>✅ ${label}:</h3>${formatSteps(data)}`, "success");
+    }
+  }
+
+  // --- Text Search ---
+  document.getElementById("searchBtn").addEventListener("click", async () => {
+    const query = document.getElementById("aiSearch").value.trim();
+    if (!query) {
+      showMessage("⚠️ Please enter a query first.", "warning");
+      return;
+    }
+
+    showMessage("🔍 Searching... Please wait.");
+
+    try {
+      const res = await fetch(WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: query }),
+      });
+      await handleResponse(res, "Result");
+    } catch (err) {
+      showMessage("❌ Error: Could not connect to server.", "error");
+    }
+  });
+
+  // --- Voice Input ---
+  document.getElementById("voiceBtn").addEventListener("click", async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      let audioChunks = [];
+
+      showMessage("🎤 Recording voice... (5s)");
+
+      mediaRecorder.ondataavailable = (event) => {
+        audioChunks.push(event.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        const blob = new Blob(audioChunks, { type: "audio/webm" });
+        const formData = new FormData();
+        formData.append("file", blob, "voice.webm");
+
+        showMessage("🔎 Analyzing voice... Please wait.");
+
+        try {
+          const res = await fetch(WEBHOOK_URL, {
+            method: "POST",
+            body: formData,
+          });
+          await handleResponse(res, "Voice Result");
+        } catch (err) {
+          showMessage("❌ Error: Could not connect to server.", "error");
+        }
+      };
+
+      mediaRecorder.start();
+      setTimeout(() => mediaRecorder.stop(), 5000);
+    } catch (err) {
+      showMessage("⚠️ Could not access microphone.", "warning");
+    }
+  });
+</script>
+
+<style>
+  #response {
+    margin-top: 15px;
+    font-family: Arial, sans-serif;
+  }
+  .message {
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+  .info { background: #e8f4ff; border: 1px solid #b3d7ff; }
+  .success { background: #eaffea; border: 1px solid #9fd89f; }
+  .error { background: #ffeaea; border: 1px solid #ff9999; }
+  .warning { background: #fff7e6; border: 1px solid #ffc966; }
+
+  .result-card {
+    margin-top: 10px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+  }
+  .result-line {
+    margin: 4px 0;
+  }
+
+  .steps-list {
+    margin-top: 10px;
+    padding-left: 20px;
+  }
+  .steps-list li {
+    margin-bottom: 10px;
+    line-height: 1.6;
+  }
+</style>
+
+
+
+</body>
+</html>

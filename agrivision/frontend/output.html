@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Analysis Result</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f4f9f4;
+      padding: 2rem;
+      text-align: center;
+    }
+    .result-box {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      border-radius: 10px;
+      background: #eafbe7;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      font-size: 1.2rem;
+      color: #333;
+    }
+    a {
+      display: inline-block;
+      margin-top: 2rem;
+      padding: 0.7rem 1.2rem;
+      background: #6ab04c;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+    a:hover {
+      background: #4e8c3a;
+    }
+  </style>
+</head>
+<body>
+  <h1>Crop Analysis Result</h1>
+  <div class="result-box" id="resultBox">Loading...</div>
+  <a href="index1.html">🔙 Go Back</a>
+
+  <script>
+  // Get result from sessionStorage
+  let result = sessionStorage.getItem("analysisResult") || "No result received.";
+
+  // Try to parse JSON safely if response looks like JSON
+  try {
+    const parsed = JSON.parse(result);
+    if (typeof parsed === "object") {
+      result = JSON.stringify(parsed, null, 2); // pretty print JSON
+    } else {
+      result = parsed;
+    }
+  } catch {
+    // If it's not JSON, replace escaped \n etc.
+    result = result.replace(/\\n/g, "\n").replace(/\\"/g, '"').replace(/\\\\/g, "\\");
+  }
+
+  // Show cleaned result
+  document.getElementById("resultBox").textContent = result;
+</script>
+
+
+</body>
+</html>

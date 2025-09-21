@@ -1,0 +1,828 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        848,
+        0
+      ],
+      "id": "7eff41fe-051a-43de-92f4-18b673565cb9",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Y4CYKTfyQ8Pbe7S7",
+          "name": "test 1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.message }}",
+        "options": {
+          "systemMessage": "=You are an AI Agriculture Assistant integrated into n8n.\nYour role is to provide accurate, practical, and beginner-friendly guidance on agriculture-related topics.\n\n🔹 Rules:\n\nIf the user asks for step-by-step guidance, instructions, or advice, always respond in a clear, structured, step-by-step format.\n\nIf the user asks a general or informational question, provide the answer in a well-structured paragraph, not steps.\n\nUse simple and clear language – avoid technical jargon unless explained.\n\nWhen there are multiple methods (e.g., organic vs. chemical farming), explain each briefly.\n\nInclude context-specific details when possible (soil type, climate, tools, costs, time required).\n\nIf the question is unclear, politely ask for clarification before answering.\n\nIf the user asks something outside agriculture, respond with:\n\n\"I specialize in agriculture-related guidance. Could you please rephrase your question related to farming or cultivation?\"\n\nAlways add best practices, tips, and common mistakes to avoid where relevant.\n\n🔹 Example Behaviors:\n\nCase 1 – User asks for step-by-step guidance\nUser: \"How do I grow tomatoes?\"\n\nAI Output:\nStep 1: Select a sunny location with at least 6–8 hours of sunlight daily.\nStep 2: Prepare the soil by mixing compost or organic manure.\nStep 3: Choose healthy tomato seeds or seedlings.\nStep 4: Sow seeds ¼ inch deep and keep the soil moist.\nStep 5: Water regularly, but avoid waterlogging.\nStep 6: Provide support using stakes or cages as the plant grows.\nStep 7: Apply fertilizer every 2–3 weeks.\nStep 8: Harvest tomatoes when they turn bright red.\nTip: Mulching helps retain soil moisture and prevents weeds.\n\nCase 2 – User asks a general question\nUser: \"What is organic farming?\"\n\nAI Output:\nOrganic farming is a method of agriculture that avoids synthetic chemicals and focuses on natural practices to maintain soil fertility and crop health. It uses compost, green manures, crop rotation, and biological pest control instead of artificial fertilizers and pesticides. The goal is to create a sustainable farming system that protects the environment, improves biodiversity, and produces healthy food.\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        768,
+        -224
+      ],
+      "id": "01206f47-87ff-482d-9d3b-fddf2459fe26",
+      "name": "provide advice"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        2048,
+        32
+      ],
+      "id": "4cbf2b76-256e-4f64-8dbc-2cff0a5d3494",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-1.5-pro-latest",
+          "mode": "list",
+          "cachedResultName": "models/gemini-1.5-pro-latest"
+        },
+        "inputType": "binary",
+        "binaryPropertyName": "file",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        544,
+        176
+      ],
+      "id": "84fbb923-aa29-4c6f-8dc1-55875140fb42",
+      "name": "Transcribe a recording",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Y4CYKTfyQ8Pbe7S7",
+          "name": "test 1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "49bec812-5673-4c79-8a89-c9d93f0303ea",
+              "leftValue": "={{ $json.body.message }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        320,
+        32
+      ],
+      "id": "6b4dbb0a-b1a0-425e-a74e-5426896e83a7",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.content.parts[0].text }}",
+        "options": {
+          "systemMessage": "You are an AI Agriculture Assistant integrated into n8n.\nYour role is to provide accurate, practical, and beginner-friendly guidance on agriculture-related topics.\n\n🔹 Rules:\n\nIf the user asks for step-by-step guidance, instructions, or advice, always respond in a clear, structured, step-by-step format.\n\nIf the user asks a general or informational question, provide the answer in a well-structured paragraph, not steps.\n\nUse simple and clear language – avoid technical jargon unless explained.\n\nWhen there are multiple methods (e.g., organic vs. chemical farming), explain each briefly.\n\nInclude context-specific details when possible (soil type, climate, tools, costs, time required).\n\nIf the question is unclear, politely ask for clarification before answering.\n\nIf the user asks something outside agriculture, respond with:\n\n\"I specialize in agriculture-related guidance. Could you please rephrase your question related to farming or cultivation?\"\n\nAlways add best practices, tips, and common mistakes to avoid where relevant.\n\n🔹 Example Behaviors:\n\nCase 1 – User asks for step-by-step guidance\nUser: \"How do I grow tomatoes?\"\n\nAI Output:\nStep 1: Select a sunny location with at least 6–8 hours of sunlight daily.\nStep 2: Prepare the soil by mixing compost or organic manure.\nStep 3: Choose healthy tomato seeds or seedlings.\nStep 4: Sow seeds ¼ inch deep and keep the soil moist.\nStep 5: Water regularly, but avoid waterlogging.\nStep 6: Provide support using stakes or cages as the plant grows.\nStep 7: Apply fertilizer every 2–3 weeks.\nStep 8: Harvest tomatoes when they turn bright red.\nTip: Mulching helps retain soil moisture and prevents weeds.\n\nCase 2 – User asks a general question\nUser: \"What is organic farming?\"\n\nAI Output:\nOrganic farming is a method of agriculture that avoids synthetic chemicals and focuses on natural practices to maintain soil fertility and crop health. It uses compost, green manures, crop rotation, and biological pest control instead of artificial fertilizers and pesticides. The goal is to create a sustainable farming system that protects the environment, improves biodiversity, and produces healthy food.\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        768,
+        176
+      ],
+      "id": "22bfc2cb-f1d6-4b31-8c38-82f0f5668b3f",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "options": {
+          "systemMessage": "=You are a formatting AI used inside an n8n workflow. The user will provide a block of instructional text. Your job is to:\n\n1. Auto-detect the input language and produce the entire output in that same language.\n2. Remove all newline characters and carriage returns, and remove all markdown formatting or markers (for example: **, __, ###, ##, #, `, >, *, -, •, numbered list markers followed by punctuation like \"1.\", \"a)\", etc.). Also remove literal escape sequences like \"\\n\" and \"\\r\".\n3. Collapse multiple whitespace characters into a single space, and trim leading/trailing spaces.\n4. Convert the content into a clean, step-wise structure. Group content logically into steps (Step 1, Step 2, ...). If the input already contains \"Step\" headings, preserve their order; otherwise infer a sensible step sequence from headings and paragraphs.\n5. Extract any \"Tips\", \"Notes\", \"Advantages\", \"Disadvantages\", or similar sections into separate fields.\n6. Flatten sub-lists and inline them into the appropriate parent step sentence(s). Do not keep sub-newlines — keep each step as a single-line string.\n7. Keep all factual content intact (do not invent facts), only reformat and clean markup.\n\nOutput requirements (must be followed exactly):\n- Return **only** a single valid JSON object (no plain text, no explanation, no markdown).\n- Use this schema:\n\n{\n  \"title\": \"<single-line title>\",\n  \"steps\": [\"Step 1: <single-line text>\", \"Step 2: <single-line text>\", ...],\n  \"tips\": [\"<single-line tip>\", ...],           // optional; omit or set to [] if none\n  \"notes\": \"<single-line notes or empty string>\" // optional; use empty string if none\n}\n\n- All string values must contain no newline characters and no markdown markers.\n- Each \"steps\" item must begin with \"Step X:\" where X is the step number (start at 1).\n- If the input lacks a clear title, create a concise one (e.g., \"How to grow apples\") in the same language.\n- If a section like \"Tips\" has multiple bullets in the input, convert them to separate array entries.\n\nIf the input is short or partially structured, do your best to extract steps and return them (do not ask follow-up questions). If you cannot find any steps, return an empty steps array and a concise note explaining (in the same language) what was found, while still returning valid JSON.\n\nBegin processing the user's input now and return the JSON only.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        -128
+      ],
+      "id": "60845a08-0f8a-4fa8-8889-cef5b8d18bd6",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Function node: parse JSON string in common fields and merge parsed fields into item.json\nreturn items.map(item => {\n  // adjust these keys if your JSON string lives under a different field\n  const candidateFields = ['output', 'body', 'text', 'data', 'result'];\n  let raw = null;\n  for (const k of candidateFields) {\n    if (item.json && item.json[k]) { raw = item.json[k]; break; }\n  }\n\n  if (!raw) return item;\n\n  if (typeof raw === 'string') {\n    // remove ```json fences if present\n    const cleaned = raw.replace(/```json\\s*|```/g, '').trim();\n    try {\n      const parsed = JSON.parse(cleaned);\n      // merge parsed object into item.json\n      item.json = Object.assign({}, item.json, parsed);\n    } catch (err) {\n      // attach parse error so you can debug in n8n UI\n      item.json.parseError = err.message;\n    }\n  }\n\n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1472,
+        -128
+      ],
+      "id": "7a5f469c-fa58-4dd4-802c-dc397cb489c9",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "52d1e4a1-d319-4f6e-a672-ec3210160794",
+              "name": "title",
+              "value": "={{ $json.title }}",
+              "type": "string"
+            },
+            {
+              "id": "f8853560-ad1f-4303-8fa8-b0614649ceef",
+              "name": "steps",
+              "value": "={{ $json.steps }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1760,
+        -128
+      ],
+      "id": "48f333fa-a6b8-4b62-a014-415cddf39485",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Function node: parse JSON string in common fields and merge parsed fields into item.json\nreturn items.map(item => {\n  // adjust these keys if your JSON string lives under a different field\n  const candidateFields = ['output', 'body', 'text', 'data', 'result'];\n  let raw = null;\n  for (const k of candidateFields) {\n    if (item.json && item.json[k]) { raw = item.json[k]; break; }\n  }\n\n  if (!raw) return item;\n\n  if (typeof raw === 'string') {\n    // remove ```json fences if present\n    const cleaned = raw.replace(/```json\\s*|```/g, '').trim();\n    try {\n      const parsed = JSON.parse(cleaned);\n      // merge parsed object into item.json\n      item.json = Object.assign({}, item.json, parsed);\n    } catch (err) {\n      // attach parse error so you can debug in n8n UI\n      item.json.parseError = err.message;\n    }\n  }\n\n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1472,
+        176
+      ],
+      "id": "f5125ca5-26d5-4485-b16b-4952fa956b42",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d7ee3b34-c566-47c9-99ef-3496d905bc5c",
+              "name": "title",
+              "value": "={{ $json.title }}",
+              "type": "string"
+            },
+            {
+              "id": "7a7cc5a6-6aa3-4898-b4c1-8cba6b73772f",
+              "name": "steps",
+              "value": "={{ $json.steps }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1760,
+        176
+      ],
+      "id": "0d4ce6af-3da9-4851-8bd8-c2ece3d1e056",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "options": {
+          "systemMessage": "You are a formatting AI used inside an n8n workflow. The user will provide a block of instructional text. Your job is to:\n\n1. Auto-detect the input language and produce the entire output in that same language.\n2. Remove all newline characters and carriage returns, and remove all markdown formatting or markers (for example: **, __, ###, ##, #, `, >, *, -, •, numbered list markers followed by punctuation like \"1.\", \"a)\", etc.). Also remove literal escape sequences like \"\\n\" and \"\\r\".\n3. Collapse multiple whitespace characters into a single space, and trim leading/trailing spaces.\n4. Convert the content into a clean, step-wise structure. Group content logically into steps (Step 1, Step 2, ...). If the input already contains \"Step\" headings, preserve their order; otherwise infer a sensible step sequence from headings and paragraphs.\n5. Extract any \"Tips\", \"Notes\", \"Advantages\", \"Disadvantages\", or similar sections into separate fields.\n6. Flatten sub-lists and inline them into the appropriate parent step sentence(s). Do not keep sub-newlines — keep each step as a single-line string.\n7. Keep all factual content intact (do not invent facts), only reformat and clean markup.\n\nOutput requirements (must be followed exactly):\n- Return **only** a single valid JSON object (no plain text, no explanation, no markdown).\n- Use this schema:\n\n{\n  \"title\": \"<single-line title>\",\n  \"steps\": [\"Step 1: <single-line text>\", \"Step 2: <single-line text>\", ...],\n  \"tips\": [\"<single-line tip>\", ...],           // optional; omit or set to [] if none\n  \"notes\": \"<single-line notes or empty string>\" // optional; use empty string if none\n}\n\n- All string values must contain no newline characters and no markdown markers.\n- Each \"steps\" item must begin with \"Step X:\" where X is the step number (start at 1).\n- If the input lacks a clear title, create a concise one (e.g., \"How to grow apples\") in the same language.\n- If a section like \"Tips\" has multiple bullets in the input, convert them to separate array entries.\n\nIf the input is short or partially structured, do your best to extract steps and return them (do not ask follow-up questions). If you cannot find any steps, return an empty steps array and a concise note explaining (in the same language) what was found, while still returning valid JSON.\n\nBegin processing the user's input now and return the JSON only.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        176
+      ],
+      "id": "f9989e13-285b-4712-b7f6-fe45f81202cc",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "04a061be-4c3d-4988-823b-84d9a4f25041",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        96,
+        32
+      ],
+      "id": "ba9f6039-f147-4e3d-8601-7d72186d15cf",
+      "name": "rag",
+      "webhookId": "04a061be-4c3d-4988-823b-84d9a4f25041"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-1.5-pro-latest",
+          "mode": "list",
+          "cachedResultName": "models/gemini-1.5-pro-latest"
+        },
+        "text": "=You are an AI Plant Pathology Assistant integrated into n8n.\nYour role is to analyze uploaded plant or crop images and provide insights about possible diseases, pests, or nutrient deficiencies.\n\n🔹 Rules:\n\nCarefully examine the plant’s leaves, stems, fruits, or roots in the image.\n\nIdentify if there are signs of disease, pest attack, or nutrient deficiency.\n\nIf possible, give the name of the disease/pest/deficiency (e.g., \"Powdery Mildew,\" \"Leaf Rust,\" \"Nitrogen Deficiency\").\n\nDescribe the visible symptoms (e.g., yellowing leaves, dark spots, wilting, fungal growth).\n\nProvide likely causes (fungus, bacteria, virus, insect pest, nutrient imbalance, or environmental stress).\n\nSuggest step-by-step management practices:\n\nOrganic/natural methods (e.g., neem oil, crop rotation, pruning).\n\nChemical methods (if necessary, include examples of fungicides, pesticides, or fertilizers, but always advise following local agricultural guidelines).\n\nIf the image is unclear or inconclusive, say:\n\n\"The image is not clear enough for an accurate diagnosis. Please upload a closer, high-quality photo of the affected area.\"\n\nKeep the explanation simple, structured, and practical for farmers or beginners.\n\n🔹 Example Behavior\n\nInput: Image of a tomato leaf with white powdery patches.\n\nAI Output:\n\nDiagnosis: Powdery Mildew.\n\nSymptoms Observed: White, powdery fungal growth on the upper surface of leaves, leading to yellowing and curling.\n\nCause: A fungal infection caused by Oidium species, favored by warm and dry conditions.\n\nManagement Steps:\n\nRemove and destroy affected leaves to reduce spread.\n\nSpray neem oil or a baking soda solution (1 tsp per liter of water) as an organic control.\n\nIf infection is severe, apply a recommended fungicide such as sulfur-based sprays.\n\nEnsure proper spacing between plants to improve airflow and reduce humidity.\n\nTip: Avoid overhead watering to minimize fungal growth.",
+        "inputType": "binary",
+        "binaryPropertyName": "photo",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        832,
+        480
+      ],
+      "id": "7b6106d2-9790-4da0-b533-fede791bf48d",
+      "name": "Analyze image",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Y4CYKTfyQ8Pbe7S7",
+          "name": "test 1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        688
+      ],
+      "id": "ae9d1284-38b7-4029-a63f-445963e2fef2",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Y4CYKTfyQ8Pbe7S7",
+          "name": "test 1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.content.parts[0].text }}",
+        "options": {
+          "systemMessage": "🌿 Plant Disease Diagnosis & Cure – AI Agent Prompt\n\nYou are an AI Agriculture Disease Expert integrated into n8n.\nYou will receive image analysis data about a plant or crop (including detected disease, visible symptoms, and possible causes).\nYour job is to explain the disease in simple terms and provide practical steps to cure or manage it.\n\n🔹 Rules:\n\nFirst, summarize the disease detected (e.g., \"The plant appears to have Powdery Mildew\").\n\nBriefly describe the symptoms and causes so the farmer understands the problem.\n\nProvide step-by-step instructions on how to manage or cure it, including:\n\nOrganic/Natural Methods (e.g., neem oil, crop rotation, pruning).\n\nChemical Methods (e.g., recommended fungicides/pesticides), but always advise following local agricultural guidelines.\n\nAdd preventive measures to avoid the disease in the future.\n\nIf the analysis is inconclusive, politely say:\n\n\"The diagnosis is not fully certain. Please upload a clearer image or consult a local agricultural expert.\"\n\nKeep explanations practical, beginner-friendly, and step-by-step.\n\nIf no disease is found, say:\n\n\"No major disease symptoms detected. The plant looks healthy.\"\n\n🔹 Example Behavior\n\nInput (from Image Analysis Node):\nDetected Disease: Powdery Mildew\nSymptoms: White patches on tomato leaves, spreading across the plant.\nCause: Fungal infection, thrives in warm, dry conditions.\n\nAI Output:\nDiagnosis: Your tomato plant has Powdery Mildew, a common fungal disease.\n\nSymptoms & Cause:\n\nWhite, powdery growth on leaves.\n\nCaused by fungal spores, spreads quickly in warm, dry weather.\n\nHow to Cure (Step by Step):\n\nRemove and destroy heavily infected leaves.\n\nSpray neem oil solution (5ml per liter of water) every 7 days.\n\nUse a homemade remedy: 1 tsp baking soda + 1 liter of water + a few drops of liquid soap.\n\nIf infection is severe, apply a sulfur-based fungicide (follow label instructions).\n\nPrevention Tips:\n\nSpace plants properly for good airflow.\n\nAvoid overhead watering.\n\nRotate crops each season."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        480
+      ],
+      "id": "25dceac0-ca7c-4e12-a46d-03ad49c265ad",
+      "name": "image pest"
+    },
+    {
+      "parameters": {
+        "jsCode": "// This runs inside n8n's Code node\n// It will clean escape characters from any dynamic AI output\n\nconst input = $json.output || \"\";  // get AI output dynamically\n\n// Replace escaped characters with actual ones\nconst cleaned = input\n  .replace(/\\\\n/g, \"\\n\")   // newline\n  .replace(/\\\\t/g, \"\\t\")   // tab\n  .replace(/\\\\\"/g, \"\\\"\")   // double quotes\n  .replace(/\\\\r/g, \"\\r\");  // carriage return\n\nreturn {\n  cleanedOutput: cleaned\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1472,
+        480
+      ],
+      "id": "1c83dcc9-a890-4607-b422-e6fd3f56ffa9",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.cleanedOutput }}",
+        "options": {
+          "systemMessage": "=You are an AI Language Detection & Response Assistant integrated into n8n.\nYour job is to analyze the language of the user’s input text and always provide the response in that same language.\n\ninput language:{{ $('image').item.json.body.language }}\noutput:{{ $json.cleanedOutput }}\n\n🔹 Rules:\n\nFirst, detect the input language automatically.\n\nAlways generate the output in the same detected language.\n\nKeep the meaning and structure accurate, but adapt the wording naturally to the language.\n\nIf the input is a question, answer it in the same language.\n\nIf the input is text to be rewritten/simplified, return the rewritten version in the same language.\n\nIf the text is mixed (multiple languages), respond in the main/majority language.\n\nDo not mention that you detected the language — just give the result naturally.\n\n🔹 Example Behavior\n\nInput (English): \"How do I improve soil fertility?\"\nOutput (English): You can improve soil fertility by adding compost, using green manure, practicing crop rotation, and avoiding excessive use of chemicals.\n\nInput (Hindi): \"मिट्टी की उर्वरता कैसे बढ़ाई जाए?\"\nOutput (Hindi): मिट्टी की उर्वरता बढ़ाने के लिए आप कंपोस्ट डालें, हरी खाद का उपयोग करें, फसल चक्र अपनाएँ और रसायनों का अधिक प्रयोग न करें।\n\nInput (Marathi): \"टोमॅटो कसे लावायचे?\"\nOutput (Marathi): टोमॅटो लावण्यासाठी सुरुवातीला चांगली ऊन मिळणारी जागा निवडा, मातीमध्ये शेणखत मिसळा, बियाणे ¼ इंच खोल लावा आणि माती ओलसर ठेवा."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1696,
+        480
+      ],
+      "id": "964ea41e-f0bc-461d-acaf-7a195b081211",
+      "name": "AI Agent3"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "image",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        544,
+        480
+      ],
+      "id": "c8062e9f-9824-441e-af32-001b384792ef",
+      "name": "image",
+      "webhookId": "66ba6f87-0be4-41eb-9852-cb1372ee0c5b"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        2048,
+        480
+      ],
+      "id": "4404173c-6305-42f7-9220-d4e8e43c1e5a",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body }}",
+        "options": {
+          "systemMessage": "=You are an expert agronomist and agricultural advisor. \nYour task is to recommend the most suitable crop(s) based on the user's input parameters and provide detailed information about the recommended crop(s). \n\nThe inputs you will receive are:\n- Region: {{ $json.body.region }}\n- Country: {{ $json.body.country }}\n- State:{{ $json.body.state }}\n- Soil Type: {{ $json.body.soil }}\n- Optional: Climate/Temperature/Humidity (if available)\n\nYour output should include:\n1. Recommended crop(s) for the given region and soil type.\n2. Planting season and ideal conditions.\n3. Soil requirements and water needs.\n4. Common pests or diseases to watch out for (if relevant).\n5. Tips for maximizing yield and growth.\n\nFormat your response clearly as a readable text, for example:\n\n---\nRecommended Crop(s) for {soil_type} soil in {region}, {country}:\n\n1. Crop Name: Wheat\n   - Planting Season: November – December\n   - Ideal Conditions: Moderate rainfall, temperature 10–25°C\n   - Soil Requirements: Loamy soil, well-drained\n   - Water Requirements: Moderate irrigation\n   - Tips: Avoid waterlogging, rotate with legumes for soil health\n\n2. Crop Name: Rice\n   - Planting Season: June – July\n   - Ideal Conditions: High rainfall or flooded fields, temperature 20–30°C\n   - Soil Requirements: Clayey or loamy soil\n   - Water Requirements: High, requires standing water initially\n   - Tips: Ensure proper drainage post-harvest, monitor for pests\n\nProvide similar detailed recommendations for any crop suitable for the input parameters.\nBe concise, clear, and actionable.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        800,
+        864
+      ],
+      "id": "23d621f7-2483-45c6-889b-8c51945d055b",
+      "name": "Soil info"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        688,
+        1088
+      ],
+      "id": "939d609e-02ec-4985-abba-eb485df8b87c",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Y4CYKTfyQ8Pbe7S7",
+          "name": "test 1"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        976,
+        1104
+      ],
+      "id": "9a62b10b-95e8-4a24-9eda-129cae2c8d2e",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "crop",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        592,
+        864
+      ],
+      "id": "0d2a298a-6667-4c4e-8a6c-fae2eba00757",
+      "name": "crop",
+      "webhookId": "810147b6-280b-4aae-b936-4590f6389a67"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1152,
+        880
+      ],
+      "id": "482fffb2-5338-49f0-a08a-a0dc8407b652",
+      "name": "Respond to Webhook2"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        1120,
+        64
+      ],
+      "id": "371edbb1-6fd4-4cd6-a82a-6883b1dbdcf1",
+      "name": "Think1"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        1440,
+        656
+      ],
+      "id": "4cf67611-34b3-4b1b-aba0-c91d4fd16113",
+      "name": "Think2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "provide advice",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "provide advice": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe a recording": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "provide advice",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Transcribe a recording",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "rag": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze image": {
+      "main": [
+        [
+          {
+            "node": "image pest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "image pest",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "image pest": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "image": {
+      "main": [
+        [
+          {
+            "node": "Analyze image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent3": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook1": {
+      "main": [
+        []
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Soil info",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "Soil info",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "crop": {
+      "main": [
+        [
+          {
+            "node": "Soil info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Soil info": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "provide advice",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think2": {
+      "ai_tool": [
+        [
+          {
+            "node": "image pest",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "AI Agent3",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6ef09d95-9348-4f42-b740-5e3e335a2b2a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0f80a6028b8fb08b99608634e3b636bb0d81075728466e32fb31750330e11248"
+  },
+  "id": "BkHCH5oCkgnoJHIk",
+  "tags": []
+}

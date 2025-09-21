@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Crop Planning Assistant</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f9f4;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #2e7d32;
+      color: white;
+      padding: 15px;
+      text-align: center;
+    }
+    nav {
+      background: #81c784;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      padding: 15px;
+    }
+    nav label {
+      font-weight: bold;
+      margin-right: 5px;
+    }
+    nav select {
+      padding: 6px;
+      font-size: 1em;
+      border-radius: 5px;
+      border: 1px solid #2e7d32;
+    }
+    main {
+      padding: 20px;
+      margin-bottom: 60px;
+    }
+    .card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      margin: 15px auto;
+      padding: 20px;
+      max-width: 900px;
+    }
+    h2 {
+      color: #2e7d32;
+    }
+    #recommendationBox {
+      margin-top:1rem;
+      font-size:1.1em;
+      min-height: 150px;
+      padding: 15px;
+      background: #eafbe7;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      white-space: pre-line;
+    }
+    footer {
+      background: #2e7d32;
+      color: white;
+      text-align: center;
+      padding: 10px;
+      margin-top: 80px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🚜 Crop Planning Assistant</h1>
+    <p>Select your location and season to get crop recommendations</p>
+  </header>
+
+  <!-- Input Filters -->
+  <nav>
+    <div>
+      <label for="region">Region:</label>
+      <select id="region">
+        <option value="">-- Select Region --</option>
+        <option value="Asia">Asia</option>
+        <option value="Africa">Africa</option>
+        <option value="Europe">Europe</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="country">Country:</label>
+      <select id="country">
+        <option value="">-- Select Country --</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="state">State:</label>
+      <select id="state">
+        <option value="">-- Select State --</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="season">Season:</label>
+      <select id="season">
+        <option value="">-- Select Season --</option>
+        <option>Summer</option>
+        <option>Winter</option>
+        <option>Rainy</option>
+      </select>
+    </div>
+  </nav>
+
+  <main>
+    <!-- Recommendation -->
+    <div class="card">
+      <h2>🌱 Crop Recommendations</h2>
+      <div id="recommendationBox">
+        Select Region, Country, State, and Season above to see crop suggestions here.
+      </div>
+    </div>
+
+    <!-- Analytics Chart -->
+    <div class="card">
+      <h2>📊 Crop Analytics</h2>
+      <canvas id="cropChart"></canvas>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2025 Crop Planning Portal</p>
+  </footer>
+
+  <script>
+    // Location mapping
+    const data = {
+      "Asia": {
+        "India": ["Maharashtra", "Punjab", "Tamil Nadu"],
+        "China": ["Guangdong", "Sichuan", "Henan"]
+      },
+      "Africa": {
+        "Kenya": ["Nairobi", "Mombasa"],
+        "Nigeria": ["Lagos", "Abuja"]
+      },
+      "Europe": {
+        "Germany": ["Bavaria", "Berlin"],
+        "France": ["Normandy", "Provence"]
+      }
+    };
+
+    const regionSelect = document.getElementById("region");
+    const countrySelect = document.getElementById("country");
+    const stateSelect = document.getElementById("state");
+    const seasonSelect = document.getElementById("season");
+    const recommendationBox = document.getElementById("recommendationBox");
+
+    // Chart.js setup
+    let ctx = document.getElementById("cropChart").getContext("2d");
+    let cropChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: [],
+        datasets: [{
+          label: "Crop Yield (tons/ha)",
+          data: [],
+          backgroundColor: []
+        }]
+      }
+    });
+
+    // Replace with your n8n or backend webhook
+    const WEBHOOK_URL = "https://your-n8n-webhook-url.com/webhook-crops";
+
+    // Update country list
+    regionSelect.addEventListener("change", function() {
+      const region = this.value;
+      countrySelect.innerHTML = '<option value="">-- Select Country --</option>';
+      stateSelect.innerHTML = '<option value="">-- Select State --</option>';
+      if (region && data[region]) {
+        Object.keys(data[region]).forEach(country => {
+          const option = document.createElement("option");
+          option.value = country;
+          option.textContent = country;
+          countrySelect.appendChild(option);
+        });
+      }
+      sendToWebhook();
+    });
+
+    // Update state list
+    countrySelect.addEventListener("change", function() {
+      const region = regionSelect.value;
+      const country = this.value;
+      stateSelect.innerHTML = '<option value="">-- Select State --</option>';
+      if (region && country && data[region][country]) {
+        data[region][country].forEach(state => {
+          const option = document.createElement("option");
+          option.value = state;
+          option.textContent = state;
+          stateSelect.appendChild(option);
+        });
+      }
+      sendToWebhook();
+    });
+
+    // Trigger webhook when inputs change
+    stateSelect.addEventListener("change", sendToWebhook);
+    seasonSelect.addEventListener("change", sendToWebhook);
+
+    function sendToWebhook() {
+      const payload = {
+        region: regionSelect.value,
+        country: countrySelect.value,
+        state: stateSelect.value,
+        season: seasonSelect.value
+      };
+
+      if (!payload.region || !payload.country || !payload.state || !payload.season) {
+        recommendationBox.textContent = "Please select all options above.";
+        return;
+      }
+
+      recommendationBox.textContent = "⏳ Fetching recommendations...";
+
+      fetch(WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => {
+        // Display recommendation
+        recommendationBox.textContent = data.recommendation || "No data available.";
+
+        // Update chart dynamically with any crops
+        if (data.analytics) {
+          cropChart.data.labels = data.analytics.crops;
+          cropChart.data.datasets[0].data = data.analytics.yields;
+
+          // Random colors for bars
+          cropChart.data.datasets[0].backgroundColor = data.analytics.crops.map(() =>
+            `hsl(${Math.floor(Math.random()*360)}, 60%, 50%)`
+          );
+
+          cropChart.update();
+        }
+      })
+      .catch(err => {
+        recommendationBox.textContent = "⚠️ Error: " + err;
+      });
+    }
+  </script>
+</body>
+</html>

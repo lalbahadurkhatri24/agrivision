@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Farmer Crop Analyzer</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #ffffff;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #6ab04c;
+      color: rgb(27, 26, 26);
+      text-align: center;
+      background-image: url('https://media.istockphoto.com/id/802601474/vector/vector-agriculture-seamless-pattern.jpg?s=612x612&w=0&k=20&c=mrA-U1Bfy4AJ20E1-TJPYjLN5Inm0aPV_JFqSiLhnms=');
+      background-size: cover;
+      padding: 3.5rem 1rem;
+    }
+    main {
+      max-width: 500px;
+      margin: 2rem auto;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      padding: 2rem;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+    input[type="file"], select, button {
+      padding: 0.7rem;
+      font-size: 1rem;
+      border-radius: 5px;
+      border: 1px solid #6ab04c;
+    }
+    button {
+      background: #6ab04c;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #4e8c3a;
+    }
+    .result {
+      margin-top: 2rem;
+      background: #eafbe7;
+      padding: 1rem;
+      border-radius: 5px;
+      min-height: 2rem;
+      font-size: 1.1rem;
+    }
+    footer {
+      text-align: center;
+      margin-top: 7rem;
+      padding: 1rem;
+      color: #6ab04c;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 style="color:black">AGRIVISION</h1>
+    <p style="font-size:1.3rem; font-weight:bold; color:#222; padding:0.5rem 1rem; border-radius:8px; display:inline-block;">
+      Upload a photo of your crop or plant and get information in your language.
+    </p>
+  </header>
+  <main>
+    <form id="photoForm" enctype="multipart/form-data">
+      <input type="file" name="photo" id="photoInput" accept="image/*" required />
+      <select id="languageSelect">
+        <option value="en">English</option>
+        <option value="hi">Hindi</option>
+        <option value="ta">Tamil</option>
+        <option value="bn">Bengali</option>
+        <option value="mr">Marathi</option>
+        <option value="te">Telugu</option>
+        <option value="ml">Malayalam</option>
+        <!-- Add more languages as needed -->
+      </select>
+      <button type="submit">Analyze Photo</button>
+    </form>
+    <div id="result" class="result"></div>
+  </main>
+  <footer>
+    <p>Powered by Gemini AI</p>
+  </footer>
+  <script>
+    // Replace with your actual webhook URL
+    const WEBHOOK_URL = "https://viraj0707.app.n8n.cloud/webhook-test/image";
+
+    document.getElementById('photoForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append('photo', document.getElementById('photoInput').files[0]);
+      const lang = document.getElementById('languageSelect').value;
+      formData.append('language', lang);
+
+      let webhookResponse = "";
+      try {
+        const res = await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          body: formData
+        });
+        try {
+          const data = await res.json();
+          webhookResponse = data.message || JSON.stringify(data);
+        } catch {
+          webhookResponse = await res.text();
+        }
+      } catch (err) {
+        webhookResponse = "Error connecting to webhook.";
+      }
+
+      
+      // In your main page script
+// NEW (uses sessionStorage)
+sessionStorage.setItem("analysisResult", webhookResponse);
+window.location.href = "output.html";
+
+
+    });
+  </script>
+</body>
+</html>

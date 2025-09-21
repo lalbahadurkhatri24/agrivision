@@ -1,0 +1,585 @@
+{
+  "name": "ecom farmer",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.question }}",
+        "options": {
+          "systemMessage": "=You are aYou are an AI assistant that helps users answer queries and fetch structured data when required. \nYour main role is to:\n1. Understand the user's natural language query.\n2. If the query requires general explanation, reasoning, or direct answer, respond clearly and helpfully in plain text.\n3. If the query requires looking up structured data you must use the connected Google Sheets tool to fetch the required rows and present them in a clear format.\n4. Always decide intelligently:\n   - If the question can be answered without tools, respond directly.\n   - If the question requires data (like \"show me all products in stock\", \"get orders from last week\", \"list buyers in Delhi\"), use the Google Sheets tool.\n5. When fetching data from Google Sheets:\n   - Return only relevant rows.\n   - Summarize the result in a user-friendly way (e.g., \"I found 5 orders placed this week. Here are the details:\").\n   - If the dataset is too large, only provide the top 10 relevant rows and summarize the rest.\n6. If the user query is ambiguous, ask clarifying questions before running any action.\n7. Always keep your response concise, professional, and easy to understand.\n\nExamples of handling queries:\n- User: \"What crops are suitable for sandy soil?\"  \n  → Answer directly based on your knowledge.\n- User: \"Show me all orders from today.\"  \n  → Use Google Sheets tool to fetch rows with today’s date, then summarize.\n- User: \"List all buyers in Maharashtra.\"  \n  → Query Google Sheets and return relevant results.\n\nYour role is to be a smart assistant that blends conversational intelligence with data lookup when required.\n helpful assistant"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -944,
+        144
+      ],
+      "id": "da7b066c-8ef5-416e-8cfa-3ff478647459",
+      "name": "AI Agent5"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Z0KJx7H_kApuaLLhhZ20yFi3FLJ45OMUv6qaFjoBvgw",
+          "mode": "list",
+          "cachedResultName": "FARMER",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Z0KJx7H_kApuaLLhhZ20yFi3FLJ45OMUv6qaFjoBvgw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Z0KJx7H_kApuaLLhhZ20yFi3FLJ45OMUv6qaFjoBvgw/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -864,
+        368
+      ],
+      "id": "f30380f0-8632-4216-8112-f539fef55198",
+      "name": "Get row(s) in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3DsFKNelOrHqhFyx",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        -736,
+        368
+      ],
+      "id": "f408cef1-4740-4c81-a152-7aeefc1e7d72",
+      "name": "Think3"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -992,
+        368
+      ],
+      "id": "419334cf-6d8f-4dac-b45b-697f79b7cd98",
+      "name": "Google Gemini Chat Model4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Y4CYKTfyQ8Pbe7S7",
+          "name": "test 1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -528,
+        144
+      ],
+      "id": "8b64d41b-babc-4fa7-b205-74c8e71b93bc",
+      "name": "Respond to Webhook3"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ecom-assistant",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1216,
+        144
+      ],
+      "id": "5593563e-27e9-455f-8ce5-6ecca7772a4a",
+      "name": "ecom assistant",
+      "webhookId": "5d95d9ef-0b81-41f6-a38a-b9524b094b3e"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a198e77f-362e-4489-b0e9-a024b5e18801",
+              "leftValue": "={{ $json.body.action }}",
+              "rightValue": "new_listing",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        80,
+        160
+      ],
+      "id": "d1c21e96-53a6-4b02-84b8-fa44f2b17acf",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.data.item }}{{ $json.body.data.seller }}",
+        "options": {
+          "systemMessage": "You are an AI assistant that helps buyers interact with sellers and purchase products. \nYou have access to the following tools:\n- Google Sheets (Get Rows): Use this to fetch seller and product information from the spreadsheet.\n- Google Sheets (Update Row): Use this to reduce stock when a buyer purchases items.\n\nYour main responsibilities are:\n\n1. Understand buyer queries:\n   - If the buyer wants to browse products, sellers, or availability → use Google Sheets (Get Rows) to fetch relevant information.\n   - If the buyer wants to purchase a product → first check stock using Google Sheets (Get Rows), then reduce the stock using Google Sheets (Update Row).\n\n2. When fetching data:\n   - Always filter rows based on the buyer’s request (product name, seller, location, etc.).\n   - Present the results clearly, e.g.:  \n     “Here are the products from Seller A: Tomatoes (10kg at ₹20/kg), Onions (5kg at ₹25/kg).”\n\n3. When handling a purchase:\n   - Use Google Sheets (Get Rows) to check if the requested quantity is available.\n   - If enough stock exists:\n     - Deduct the purchased amount from the quantity.\n     - Use Google Sheets (Update Row) to update the new stock.\n     - Confirm the order with a clear message to the buyer.\n   - If stock is insufficient:\n     - Inform the buyer clearly.\n     - Suggest alternatives if available.\n\n4. Rules for updates:\n   - Never reduce stock below zero.\n   - If stock reaches zero, update the row to show “Out of Stock” instead of deleting the product.\n   - Always confirm product name, seller, and quantity before updating.\n\n5. Response style:\n   - Be clear, professional, and concise.\n   - Example confirmations:  \n     - “Your order for 2kg of Tomatoes from Seller A is confirmed. Stock updated to 8kg remaining.”  \n     - “Seller B only has 3kg of Onions left, but you requested 5kg. Would you like to adjust?”\n\n6. Decision making:\n   - Informational queries → Use Google Sheets (Get Rows).  \n   - Purchase queries → Use Google Sheets (Get Rows) to check stock, then Google Sheets (Update Row) to deduct.  \n   - If unclear → Ask buyer to clarify before acting.\n\nYou are the buyer’s smart shopping assistant. Always combine conversational answers with the correct use of Google Sheets tools to keep stock accurate.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        256
+      ],
+      "id": "fc5b8250-dff4-4958-8d12-51cf937cd6f2",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        272,
+        496
+      ],
+      "id": "b690a8f6-2dd0-42c2-b31a-2128cc8e4252",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Y4CYKTfyQ8Pbe7S7",
+          "name": "test 1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Z0KJx7H_kApuaLLhhZ20yFi3FLJ45OMUv6qaFjoBvgw",
+          "mode": "list",
+          "cachedResultName": "FARMER",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Z0KJx7H_kApuaLLhhZ20yFi3FLJ45OMUv6qaFjoBvgw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Z0KJx7H_kApuaLLhhZ20yFi3FLJ45OMUv6qaFjoBvgw/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        688,
+        496
+      ],
+      "id": "31562a61-8d00-42f0-98b0-59ef46b752d6",
+      "name": "Get row(s) in sheet in Google Sheets1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3DsFKNelOrHqhFyx",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        544,
+        512
+      ],
+      "id": "cf08ec94-4e9c-4d0b-abaa-046fd122d2e2",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1Z0KJx7H_kApuaLLhhZ20yFi3FLJ45OMUv6qaFjoBvgw",
+          "mode": "list",
+          "cachedResultName": "FARMER",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Z0KJx7H_kApuaLLhhZ20yFi3FLJ45OMUv6qaFjoBvgw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Z0KJx7H_kApuaLLhhZ20yFi3FLJ45OMUv6qaFjoBvgw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "NAME": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('NAME__using_to_match_', ``, 'string') }}",
+            "CROP": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('CROP', ``, 'string') }}",
+            "QUANTITY KG": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('QUANTITY_KG', ``, 'string') }}",
+            "PRICE/KG": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('PRICE_KG', ``, 'string') }}",
+            "REGION/COUNTRY/STATE": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('REGION_COUNTRY_STATE', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "NAME"
+          ],
+          "schema": [
+            {
+              "id": "NAME",
+              "displayName": "NAME",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "CROP",
+              "displayName": "CROP",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "QUANTITY KG",
+              "displayName": "QUANTITY KG",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "PRICE/KG",
+              "displayName": "PRICE/KG",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "REGION/COUNTRY/STATE",
+              "displayName": "REGION/COUNTRY/STATE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        864,
+        496
+      ],
+      "id": "0edda999-2241-4110-b82e-77d6042f721e",
+      "name": "Append or update row in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3DsFKNelOrHqhFyx",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1Z0KJx7H_kApuaLLhhZ20yFi3FLJ45OMUv6qaFjoBvgw",
+          "mode": "list",
+          "cachedResultName": "FARMER",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Z0KJx7H_kApuaLLhhZ20yFi3FLJ45OMUv6qaFjoBvgw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Z0KJx7H_kApuaLLhhZ20yFi3FLJ45OMUv6qaFjoBvgw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "NAME": "={{ $json.body.data.seller }}",
+            "QUANTITY KG": "={{ $json.body.data.qty }}",
+            "CROP": "={{ $json.body.data.item }}",
+            "REGION/COUNTRY/STATE": "={{ $json.body.data.location }}",
+            "PRICE/KG": "={{ $json.body.data.price }}"
+          },
+          "matchingColumns": [
+            "NAME"
+          ],
+          "schema": [
+            {
+              "id": "NAME",
+              "displayName": "NAME",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "CROP",
+              "displayName": "CROP",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "QUANTITY KG",
+              "displayName": "QUANTITY KG",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "PRICE/KG",
+              "displayName": "PRICE/KG",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "REGION/COUNTRY/STATE",
+              "displayName": "REGION/COUNTRY/STATE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        336,
+        16
+      ],
+      "id": "63b3d3c2-aac2-4e40-aa77-f6c892f28a94",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3DsFKNelOrHqhFyx",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "seller-details",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -144,
+        160
+      ],
+      "id": "a26d0f5c-20bd-4cc6-9893-4dc030bbe9ab",
+      "name": "mini ecom",
+      "webhookId": "e28eeee4-f7d8-4d7c-a01d-01b677d5b13e"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "AI Agent5": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent5",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think3": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent5",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent5",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ecom assistant": {
+      "main": [
+        [
+          {
+            "node": "AI Agent5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet in Google Sheets1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mini ecom": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "171533e0-fa48-4082-a170-00a0cc9e153a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0f80a6028b8fb08b99608634e3b636bb0d81075728466e32fb31750330e11248"
+  },
+  "id": "xNZKCWlzsuUWMVR3",
+  "tags": []
+}

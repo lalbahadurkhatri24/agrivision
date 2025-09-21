@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>AgriTrade — AI Marketplace for Farmers</title>
+<style>
+:root{
+  --green:#2e7d32; --light:#f4f9f4; --card:#ffffff;
+  --muted:#6b6b6b; --accent:#81c784;
+}
+*{box-sizing:border-box}
+body{font-family:Inter,system-ui,Arial,sans-serif;margin:0;background:linear-gradient(180deg,#f8fff8, #f4f9f4);color:#222}
+header{background:var(--green);color:#fff;padding:18px 20px;display:flex;align-items:center;gap:16px}
+header h1{margin:0;font-size:20px}
+.container{max-width:1100px;margin:18px auto;padding:12px}
+.grid{display:grid;gap:12px}
+.cols-3{grid-template-columns:1fr 360px;align-items:start}
+.card{background:var(--card);border-radius:10px;padding:14px;box-shadow:0 6px 18px rgba(0,0,0,0.06)}
+label{display:block;font-weight:600;margin:8px 0 6px}
+input[type="text"],input[type="number"],select,textarea{width:100%;padding:8px;border:1px solid #ddd;border-radius:6px}
+button{background:var(--green);color:#fff;border:none;padding:9px 12px;border-radius:8px;cursor:pointer}
+button.ghost{background:transparent;color:var(--green);border:1px solid var(--accent)}
+.listing{display:flex;gap:12px;align-items:center;padding:10px;border-radius:8px;border:1px solid #f0f0f0;margin-bottom:10px}
+.listing img{width:86px;height:66px;object-fit:cover;border-radius:6px}
+.meta{flex:1}
+.meta h3{margin:0 0 6px;font-size:16px}
+.meta p{margin:0;color:var(--muted);font-size:13px}
+.price{font-weight:700;color:var(--green)}
+.controls{display:flex;gap:8px;align-items:center}
+.searchbar{display:flex;gap:8px;align-items:center}
+.small{font-size:13px;color:var(--muted)}
+.ai-box{height:260px;overflow:auto;padding:8px;background:#fbfffb;border-radius:8px;border:1px dashed #e6f3e6}
+.msg{margin:6px 0;padding:8px;border-radius:8px;max-width:88%}
+.msg.user{background:#e8f5e9;margin-left:auto}
+.msg.ai{background:#fff; border:1px solid #eee}
+footer{padding:18px;text-align:center;color:var(--muted);font-size:13px}
+@media (max-width:880px){.cols-3{grid-template-columns:1fr} .container{padding:8px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>AgriTrade — AI Marketplace for Farmers</h1>
+  <div style="margin-left:auto;font-size:13px;opacity:.95">Buy ● Sell ● Get AI help</div>
+</header>
+
+<div class="container">
+  <div class="grid cols-3">
+    <!-- MAIN: marketplace + create listing -->
+    <div>
+      <!-- Search & Filters -->
+      <div class="card" style="margin-bottom:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <div class="searchbar" style="flex:1">
+          <input id="searchInput" type="text" placeholder="Search crops, seller, state..." />
+          <select id="regionFilter" style="width:160px">
+            <option value="">All Regions</option>
+            <option>Asia</option><option>Africa</option><option>Europe</option>
+          </select>
+          <button id="clearFilters" class="ghost">Clear</button>
+        </div>
+      </div>
+
+      <!-- Listings -->
+      <div id="listingsContainer" class="card">
+        <h2 style="margin-top:0">Market Listings</h2>
+        <div id="listings"></div>
+        <div id="noListings" class="small" style="display:none">No listings found. Create one using the form on the right.</div>
+      </div>
+
+      <!-- My transactions -->
+      <div class="card" style="margin-top:12px">
+        <h3 style="margin:0 0 8px">My Orders</h3>
+        <div id="ordersList" class="small"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Create listing + AI assistant -->
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <!-- Create listing -->
+      <div class="card">
+        <h3 style="margin-top:0">Create Sell Listing</h3>
+        <label>Farmer / Seller Name</label>
+        <input id="sellerName" type="text" placeholder="e.g., Ramesh, Farm ID" />
+        <label>Crop / Item</label>
+        <input id="itemName" type="text" placeholder="e.g., Wheat, Tomatoes" />
+        <label>Quantity (kg)</label>
+        <input id="quantity" type="number" min="1" value="100" />
+        <label>Price (per kg / ₹)</label>
+        <input id="price" type="number" min="0" value="20" />
+        <label>Region / Country / State</label>
+        <input id="location" type="text" placeholder="e.g., Asia, India, Punjab" />
+        <label>Image URL (optional)</label>
+        <input id="imageUrl" type="text" placeholder="link to photo (optional)" />
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button id="createListingBtn">Publish Listing</button>
+        </div>
+        <div id="createMsg" class="small" style="margin-top:8px"></div>
+      </div>
+
+      <!-- AI assistant -->
+      <div class="card">
+        <h3 style="margin:0 0 8px">AI Assistant</h3>
+        <div class="ai-box" id="aiBox">
+          <div class="msg ai">Hello — ask me about fair prices or negotiation tips.</div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <input id="aiInput" type="text" placeholder="Ask AI..." style="flex:1" />
+          <button id="aiAskBtn">Ask AI</button>
+        </div>
+      </div>
+
+      <!-- Snapshot -->
+      <div class="card">
+        <h3 style="margin:0 0 8px">Marketplace Snapshot</h3>
+        <div class="small" id="snapshot"></div>
+        <div style="margin-top:8px"><button id="refreshSnapshot" class="ghost">Refresh Snapshot</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>AgriTrade • AI-assisted marketplace</footer>
+
+<script>
+const WEBHOOK_AI_URL = "https://viraj0707.app.n8n.cloud/webhook-test/ecom-assistant";
+const WEBHOOK_URL = "https://viraj0707.app.n8n.cloud/webhook-test/seller-details";
+
+const $ = id => document.getElementById(id);
+const persistKey = "agritrade_listings_v3";
+const ordersKey = "agritrade_orders_v3";
+
+function uid(){ return 'l'+Math.random().toString(36).slice(2,9); }
+
+let listings = JSON.parse(localStorage.getItem(persistKey) || "[]");
+let orders = JSON.parse(localStorage.getItem(ordersKey) || "[]");
+
+function saveListings(){ localStorage.setItem(persistKey, JSON.stringify(listings)); }
+function saveOrders(){ localStorage.setItem(ordersKey, JSON.stringify(orders)); }
+
+if(listings.length===0){
+  listings = [
+    { id: uid(), seller: "Raju", item:"Tomato", qty:500, price:12, location:"Asia, India, Maharashtra", img:"", created:Date.now() },
+    { id: uid(), seller: "Asha", item:"Wheat", qty:1000, price:22, location:"Asia, India, Punjab", img:"", created:Date.now() },
+  ];
+  saveListings();
+}
+
+// ==================== Render ====================
+function renderListings(filterText="", region=""){
+  const container = $("listings");
+  container.innerHTML = "";
+  const filtered = listings.filter(l=>{
+    const matchText = !filterText || (l.item + " " + l.seller + " " + l.location).toLowerCase().includes(filterText.toLowerCase());
+    const matchRegion = !region || (l.location && l.location.toLowerCase().includes(region.toLowerCase()));
+    return matchText && matchRegion;
+  });
+  if(filtered.length===0){ $("noListings").style.display="block"; return; }
+  $("noListings").style.display="none";
+  filtered.sort((a,b)=>b.created - a.created);
+  filtered.forEach(l=>{
+    const el = document.createElement("div");
+    el.className = "listing";
+    el.innerHTML = `
+      <img src="${l.img || 'https://via.placeholder.com/160x120?text='+encodeURIComponent(l.item)}" />
+      <div class="meta">
+        <h3>${l.item} <span class="small">by ${l.seller}</span></h3>
+        <p class="small">${l.location} • Qty: ${l.qty} kg</p>
+        <p class="price">₹ ${l.price} / kg</p>
+      </div>
+      <div class="controls">
+        <button onclick="buyItem('${l.id}')">Buy</button>
+      </div>
+    `;
+    container.appendChild(el);
+  });
+  renderSnapshot();
+}
+
+function renderOrders(){
+  const el = $("ordersList");
+  if(orders.length===0){ el.innerHTML="<div class='small'>No orders yet.</div>"; return; }
+  el.innerHTML = orders.map(o=> `<div><strong>${o.item}</strong> — ${o.qty}kg • ₹${o.total}</div>`).join("");
+}
+
+function renderSnapshot(){
+  const totalListings = listings.length;
+  const totalQty = listings.reduce((s,l)=>s+Number(l.qty||0),0);
+  const avgPrice = (listings.reduce((s,l)=>s+Number(l.price||0),0)/(totalListings||1)).toFixed(1);
+  $("snapshot").innerHTML = `
+    <div>Total Listings: ${totalListings}</div>
+    <div>Total Quantity: ${totalQty} kg</div>
+    <div>Avg Price: ₹ ${avgPrice}/kg</div>
+  `;
+}
+
+// ==================== Events ====================
+
+// Create Listing
+$("createListingBtn").addEventListener("click", ()=>{
+  const seller=$("sellerName").value.trim()||"Anonymous";
+  const item=$("itemName").value.trim();
+  const qty=Number($("quantity").value); 
+  const price=Number($("price").value);
+  const location=$("location").value.trim()||"Unknown";
+  const img=$("imageUrl").value.trim();
+
+  if(!item||!qty||!price){ $("createMsg").textContent="Fill item, qty, price."; return; }
+
+  const newL = {
+    id: uid(),
+    seller: seller,
+    item: item,
+    qty: qty,
+    price: price,
+    location: location,
+    img: img || "",
+    created: Date.now()
+  };
+
+  listings.push(newL); saveListings(); renderListings();
+  $("createMsg").textContent="Listing added.";
+
+  fetch(WEBHOOK_URL,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({action:"new_listing", data:newL})
+  }).catch(e=>console.error("Webhook error:",e));
+});
+
+// ==================== BUY ====================
+function buyItem(id){
+  const l = listings.find(x => x.id === id);
+  if(!l) return alert("Listing not found");
+
+  const q = prompt(`Enter quantity to buy (available ${l.qty} kg):`);
+  if(!q) return; // cancelled
+
+  const n = Number(q);
+  if(isNaN(n) || n <= 0){
+    return alert("Please enter a valid number");
+  }
+  if(n > l.qty){
+    return alert(`Cannot buy more than available quantity (${l.qty} kg)`);
+  }
+
+  // Update listing
+  l.qty -= n;
+  if(l.qty === 0){
+    listings = listings.filter(x => x.id !== id);
+  }
+
+  // Create order object
+  const order = {
+    id: uid(),
+    item: l.item,
+    qty: n,
+    price_per_kg: l.price,
+    total: n * l.price,
+    seller: l.seller,
+    date: Date.now()
+  };
+
+  orders.push(order);
+
+  saveListings();
+  saveOrders();
+  renderListings();
+  renderOrders();
+
+  console.log("Order sent to webhook:", order);
+
+  // Send to webhook
+  fetch(WEBHOOK_URL,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({action:"buy", data:order})
+  }).catch(e=>console.error("Webhook error:", e));
+
+  alert(`Purchased ${n}kg of ${l.item} from ${l.seller} for ₹${order.total}`);
+}
+
+// ==================== AI ====================
+$("aiAskBtn").addEventListener("click", askAI);
+function askAI(){
+  const q=$("aiInput").value.trim(); if(!q) return;
+  appendAIMessage(q,"user"); $("aiInput").value="";
+  const ph=appendAIMessage("Thinking...","ai",true);
+
+  if(WEBHOOK_AI_URL){
+    fetch(WEBHOOK_AI_URL,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({question:q})
+    })
+    .then(r=>r.json())
+    .then(j=>ph.innerText=j.answer||JSON.stringify(j))
+    .catch(e=>ph.innerText="Error:"+e);
+  }else{
+    ph.innerText="Mock AI: avg price is ₹"+(listings.reduce((s,l)=>s+l.price,0)/(listings.length||1)).toFixed(1)+"/kg.";
+  }
+
+  // Log chat too
+  fetch(WEBHOOK_URL,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({action:"chat", question:q})
+  }).catch(e=>console.error("Webhook error:", e));
+}
+
+function appendAIMessage(t,who,isPh){
+  const m = document.createElement("div");
+  m.className = "msg " + (who==="user"?"user":"ai");
+  m.innerText = t;
+  if(isPh) m.style.opacity=.7;
+  $("aiBox").appendChild(m);
+  $("aiBox").scrollTop = $("aiBox").scrollHeight;
+  return m;
+}
+
+// Filters
+$("searchInput").addEventListener("input", ()=>renderListings($("searchInput").value,$("regionFilter").value));
+$("regionFilter").addEventListener("change", ()=>renderListings($("searchInput").value,$("regionFilter").value));
+$("clearFilters").addEventListener("click", ()=>{ $("searchInput").value=""; $("regionFilter").value=""; renderListings(); });
+$("refreshSnapshot").addEventListener("click", renderSnapshot);
+
+// Initial render
+renderListings();
+renderOrders();
+renderSnapshot();
+</script>
+</body>
+</html>
